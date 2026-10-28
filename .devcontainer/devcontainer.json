@@ -1,0 +1,27 @@
+{
+  "name": "Clash Commander",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/php:1": {
+      "version": "8.5",
+      "installComposer": true
+    },
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "24",
+      "nodeGypDependencies": false,
+      "pnpmVersion": "none"
+    }
+  },
+  "containerUser": "dev",
+  "init": true,
+  "forwardPorts": [8000, 5173],
+  "mounts": ["source=codex-data,target=/home/dev/.codex,type=volume"],
+  "postCreateCommand": "composer install --no-interaction && npm ci && npm install -g @openai/codex",
+  "customizations": {
+    "jetbrains": {
+      "backend": "WebStorm"
+    }
+  }
+}
