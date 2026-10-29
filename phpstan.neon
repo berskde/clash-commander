@@ -1,13 +1,13 @@
 includes:
-    - vendor/larastan/larastan/extension.neon
-    - vendor/nesbot/carbon/extension.neon
+  - vendor/larastan/larastan/extension.neon
+  - vendor/nesbot/carbon/extension.neon
 
 parameters:
-    paths:
-        - app/
-        - bootstrap/app.php
-        - config/
-        - database/
-        - routes/
+  paths:
+    - app/
+    - bootstrap/app.php
+    - config/
+    - database/
+    - routes/
 
-    level: 7
+  level: 7

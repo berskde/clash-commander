@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
@@ -9,6 +10,33 @@ test('login screen can be rendered', function () {
 
     $response->assertOk();
 });
+
+test('authentication pages reflect enabled Fortify features', function (bool $enabled) {
+    config(['fortify.features' => $enabled ? [
+        Features::registration(),
+        Features::resetPasswords(),
+        Features::passkeys(),
+    ] : []]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('home')
+            ->where('canRegister', $enabled),
+        );
+
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/login')
+            ->where('canRegister', $enabled)
+            ->where('canResetPassword', $enabled)
+            ->where('canUsePasskeys', $enabled),
+        );
+})->with([
+    'enabled' => [true],
+    'disabled' => [false],
+]);
 
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();

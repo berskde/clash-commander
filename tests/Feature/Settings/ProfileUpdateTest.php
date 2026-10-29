@@ -24,6 +24,7 @@ test('profile information can be updated', function () {
 
     $response
         ->assertSessionHasNoErrors()
+        ->assertInertiaFlash('toast', ['type' => 'success', 'message' => 'Profile updated.'])
         ->assertRedirect(route('profile.edit'));
 
     $user->refresh();

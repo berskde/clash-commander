@@ -1,45 +1,38 @@
-import type { LucideIcon } from 'lucide-react';
 import { Monitor, Moon, Sun } from 'lucide-react';
-import type { HTMLAttributes } from 'react';
-import type { Appearance } from '@/hooks/use-appearance';
+import type { ComponentProps } from 'react';
 import { useAppearance } from '@/hooks/use-appearance';
-import { cn } from '@/lib/utils';
+import type { Appearance } from '@/hooks/use-appearance';
 
-export default function AppearanceToggleTab({
-    className = '',
-    ...props
-}: HTMLAttributes<HTMLDivElement>) {
-    const { appearance, updateAppearance } = useAppearance();
+const options = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor },
+] satisfies { value: Appearance; label: string; icon: typeof Sun }[];
 
-    const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon, label: 'Dark' },
-        { value: 'system', icon: Monitor, label: 'System' },
-    ];
+export default function AppearanceTabs({
+  className,
+  ...props
+}: ComponentProps<'fieldset'>) {
+  const { appearance, updateAppearance } = useAppearance();
 
-    return (
-        <div
-            className={cn(
-                'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800',
-                className,
-            )}
-            {...props}
-        >
-            {tabs.map(({ value, icon: Icon, label }) => (
-                <button
-                    key={value}
-                    onClick={() => updateAppearance(value)}
-                    className={cn(
-                        'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
-                        appearance === value
-                            ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                            : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
-                    )}
-                >
-                    <Icon className="-ml-1 h-4 w-4" />
-                    <span className="ml-1.5 text-sm">{label}</span>
-                </button>
-            ))}
-        </div>
-    );
+  return (
+    <fieldset className={className} {...props}>
+      <legend>Color scheme</legend>
+      <div>
+        {options.map(({ value, label, icon: Icon }) => (
+          <label key={value}>
+            <input
+              type="radio"
+              name="appearance"
+              value={value}
+              checked={appearance === value}
+              onChange={() => updateAppearance(value)}
+            />
+            <Icon aria-hidden="true" />
+            {label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
 }

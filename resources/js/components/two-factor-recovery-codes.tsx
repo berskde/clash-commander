@@ -1,164 +1,84 @@
 import { Form } from '@inertiajs/react';
-import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import InputError from '@/components/input-error';
 import AlertError from '@/components/alert-error';
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
 type Props = {
-    recoveryCodesList: string[];
-    fetchRecoveryCodes: () => Promise<void>;
-    errors: string[];
+  recoveryCodesList: string[];
+  fetchRecoveryCodes: () => Promise<void>;
+  isLoading?: boolean;
+  errors?: string[];
 };
 
 export default function TwoFactorRecoveryCodes({
-    recoveryCodesList,
-    fetchRecoveryCodes,
-    errors,
+  recoveryCodesList,
+  fetchRecoveryCodes,
+  isLoading = false,
+  errors = [],
 }: Props) {
-    const [codesAreVisible, setCodesAreVisible] = useState<boolean>(false);
-    const codesSectionRef = useRef<HTMLDivElement | null>(null);
-    const canRegenerateCodes = recoveryCodesList.length > 0 && codesAreVisible;
+  const [isVisible, setIsVisible] = useState(false);
 
-    const toggleCodesVisibility = useCallback(async () => {
-        if (!codesAreVisible && !recoveryCodesList.length) {
-            await fetchRecoveryCodes();
-        }
+  async function toggleVisibility() {
+    if (!isVisible) {
+      await fetchRecoveryCodes();
+    }
 
-        setCodesAreVisible(!codesAreVisible);
+    setIsVisible(!isVisible);
+  }
 
-        if (!codesAreVisible) {
-            setTimeout(() => {
-                codesSectionRef.current?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                });
-            });
-        }
-    }, [codesAreVisible, recoveryCodesList.length, fetchRecoveryCodes]);
+  return (
+    <div>
+      <h3>Recovery codes</h3>
+      {errors.length > 0 && <AlertError errors={errors} />}
+      <p>
+        Store these codes somewhere safe. Each code can be used once if you lose
+        access to your authenticator app.
+      </p>
+      <button
+        type="button"
+        onClick={toggleVisibility}
+        disabled={isLoading}
+        aria-expanded={isVisible}
+        aria-controls="recovery-codes"
+      >
+        {isVisible ? 'Hide recovery codes' : 'View recovery codes'}
+      </button>
 
-    useEffect(() => {
-        if (!recoveryCodesList.length) {
-            void fetchRecoveryCodes();
-        }
-    }, [recoveryCodesList.length, fetchRecoveryCodes]);
-
-    const RecoveryCodeIconComponent = codesAreVisible ? EyeOff : Eye;
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex gap-3">
-                    <LockKeyhole className="size-4" aria-hidden="true" />
-                    2FA recovery codes
-                </CardTitle>
-                <CardDescription>
-                    Recovery codes let you regain access if you lose your 2FA
-                    device. Store them in a secure password manager.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col gap-3 select-none sm:flex-row sm:items-center sm:justify-between">
-                    <Button
-                        onClick={toggleCodesVisibility}
-                        className="w-fit"
-                        aria-expanded={codesAreVisible}
-                        aria-controls="recovery-codes-section"
-                    >
-                        <RecoveryCodeIconComponent
-                            className="size-4"
-                            aria-hidden="true"
-                        />
-                        {codesAreVisible ? 'Hide' : 'View'} recovery codes
-                    </Button>
-
-                    {canRegenerateCodes && (
-                        <Form
-                            {...regenerateRecoveryCodes.form()}
-                            options={{ preserveScroll: true }}
-                            onSuccess={fetchRecoveryCodes}
-                        >
-                            {({ processing }) => (
-                                <Button
-                                    variant="secondary"
-                                    type="submit"
-                                    disabled={processing}
-                                    aria-describedby="regenerate-warning"
-                                >
-                                    <RefreshCw /> Regenerate codes
-                                </Button>
-                            )}
-                        </Form>
-                    )}
-                </div>
-                <div
-                    id="recovery-codes-section"
-                    className={`relative overflow-hidden transition-all duration-300 ${codesAreVisible ? 'h-auto opacity-100' : 'h-0 opacity-0'}`}
-                    aria-hidden={!codesAreVisible}
-                >
-                    <div className="mt-3 space-y-3">
-                        {errors?.length ? (
-                            <AlertError errors={errors} />
-                        ) : (
-                            <>
-                                <div
-                                    ref={codesSectionRef}
-                                    className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm"
-                                    role="list"
-                                    aria-label="Recovery codes"
-                                >
-                                    {recoveryCodesList.length ? (
-                                        recoveryCodesList.map((code, index) => (
-                                            <div
-                                                key={index}
-                                                role="listitem"
-                                                className="select-text"
-                                            >
-                                                {code}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div
-                                            className="space-y-2"
-                                            aria-label="Loading recovery codes"
-                                        >
-                                            {Array.from(
-                                                { length: 8 },
-                                                (_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
-                                                        aria-hidden="true"
-                                                    />
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="text-xs text-muted-foreground select-none">
-                                    <p id="regenerate-warning">
-                                        Each recovery code can be used once to
-                                        access your account and will be removed
-                                        after use. If you need more, click{' '}
-                                        <span className="font-bold">
-                                            Regenerate codes
-                                        </span>{' '}
-                                        above.
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
+      {isVisible && (
+        <div id="recovery-codes">
+          {isLoading && <p role="status">Loading recovery codes...</p>}
+          {!isLoading && recoveryCodesList.length === 0 && (
+            <button type="button" onClick={fetchRecoveryCodes}>
+              Retry loading recovery codes
+            </button>
+          )}
+          <ul aria-label="Recovery codes">
+            {recoveryCodesList.map((code) => (
+              <li key={code}>{code}</li>
+            ))}
+          </ul>
+          {recoveryCodesList.length > 0 && (
+            <Form
+              {...regenerateRecoveryCodes.form()}
+              options={{ preserveScroll: true }}
+              onSuccess={fetchRecoveryCodes}
+            >
+              {({ processing, errors }) => (
+                <>
+                  {Object.entries(errors).map(([field, message]) => (
+                    <InputError key={field} message={message} />
+                  ))}
+                  <button type="submit" disabled={processing || isLoading}>
+                    Regenerate codes
+                  </button>
+                </>
+              )}
+            </Form>
+          )}
+          <p>Regenerating codes invalidates all previous codes.</p>
+        </div>
+      )}
+    </div>
+  );
 }

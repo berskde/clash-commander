@@ -1,17 +1,22 @@
-import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
+import { Link, usePage } from '@inertiajs/react';
+import { home } from '@/routes';
+import type { AuthLayoutProps } from '@/types';
 
 export default function AuthLayout({
-    title = '',
-    description = '',
-    children,
-}: {
-    title?: string;
-    description?: string;
-    children: React.ReactNode;
-}) {
-    return (
-        <AuthLayoutTemplate title={title} description={description}>
-            {children}
-        </AuthLayoutTemplate>
-    );
+  title,
+  description,
+  children,
+}: AuthLayoutProps) {
+  const { name } = usePage().props;
+
+  return (
+    <main>
+      <Link href={home()}>{name}</Link>
+      <header>
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+      </header>
+      {children}
+    </main>
+  );
 }

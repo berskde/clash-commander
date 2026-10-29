@@ -1,50 +1,30 @@
 import { Link } from '@inertiajs/react';
-import { Fragment } from 'react';
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { toUrl } from '@/lib/utils';
+import type { BreadcrumbItem } from '@/types';
 
 export function Breadcrumbs({
-    breadcrumbs,
+  breadcrumbs,
 }: {
-    breadcrumbs: BreadcrumbItemType[];
+  breadcrumbs: BreadcrumbItem[];
 }) {
-    return (
-        <>
-            {breadcrumbs.length > 0 && (
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        {breadcrumbs.map((item, index) => {
-                            const isLast = index === breadcrumbs.length - 1;
+  if (!breadcrumbs.length) {
+    return null;
+  }
 
-                            return (
-                                <Fragment key={index}>
-                                    <BreadcrumbItem>
-                                        {isLast ? (
-                                            <BreadcrumbPage>
-                                                {item.title}
-                                            </BreadcrumbPage>
-                                        ) : (
-                                            <BreadcrumbLink asChild>
-                                                <Link href={item.href}>
-                                                    {item.title}
-                                                </Link>
-                                            </BreadcrumbLink>
-                                        )}
-                                    </BreadcrumbItem>
-                                    {!isLast && <BreadcrumbSeparator />}
-                                </Fragment>
-                            );
-                        })}
-                    </BreadcrumbList>
-                </Breadcrumb>
+  return (
+    <nav aria-label="Breadcrumb">
+      <ol>
+        {breadcrumbs.map((item, index) => (
+          <li key={`${toUrl(item.href)}-${index}`}>
+            {index > 0 && <span aria-hidden="true">/</span>}
+            {index === breadcrumbs.length - 1 ? (
+              <span aria-current="page">{item.title}</span>
+            ) : (
+              <Link href={item.href}>{item.title}</Link>
             )}
-        </>
-    );
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
 }

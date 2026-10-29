@@ -1,8 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::inertia('/', 'home', [
+    'canRegister' => fn () => Features::enabled(Features::registration()),
+])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
