@@ -53,6 +53,9 @@ export default defineConfig({
       typeAware: true,
     },
   },
+  test: {
+    include: ['resources/js/tests/**/*.test.{ts,tsx}'],
+  },
   fmt: {
     printWidth: 80,
     tabWidth: 2,
